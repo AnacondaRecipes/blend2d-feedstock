@@ -23,6 +23,9 @@ requirements:
     - cmake >=3.24
     - ninja-base
   host:
+    # asmjit use is disabled on win-arm64 at compile time due to unrecognized _M_ARM64
+    # see https://github.com/blend2d/blend2d/issues/276
+    # this is result in overdepending on asmjit for this arch, which we will accept for now.
     - asmjit 0.0.0.2026.03.26
 
 test:
