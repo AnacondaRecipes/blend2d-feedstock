@@ -1,5 +1,0 @@
-channels:
-  - defaults
-  - https://package-build.internal.anaconda.com/pkg-orchestrator/v1/channels/graphs/0d361c6b-f53d-463c-bbc9-76aba408df96
-build_parameters:
-  - --error-overlinking
