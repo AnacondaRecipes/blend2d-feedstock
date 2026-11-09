@@ -1,0 +1,22 @@
+Address MSVC ARM64 JIT detection (https://github.com/blend2d/blend2d/issues/276)
+
+MSVC defines _M_ARM64 for ARM64 targets, but the last-resort JIT guard in
+blend2d/core/api-build_p.h doesn't list it, so BL_BUILD_NO_JIT is defined
+even when CMakeLists.txt detected AARCH64 and enabled JIT. Blend2D then
+compiles out all JIT pipelines and, on win-arm64, never links asmjit
+because the pipelines that reference it are compiled out.
+
+Adding _M_ARM64 keeps the source-level guard consistent with the build
+system so JIT pipelines and asmjit are used on win-arm64.
+
+--- a/blend2d/core/api-build_p.h
++++ b/blend2d/core/api-build_p.h
+@@ -38,7 +38,7 @@
+ #if !(defined(BL_BUILD_NO_JIT)) && \
+     !(defined(_M_X64)   || defined(__x86_64)  || defined(__x86_64__) || defined(__amd64) || defined(__amd64__) || \
+       defined(_M_IX86)  || defined(__i386)    || defined(__i386__)   || \
+-      defined(__arm64)  || defined(__arm64__) || defined(__aarch64__))
++      defined(_M_ARM64) || defined(__arm64)  || defined(__arm64__) || defined(__aarch64__))
+   #define BL_BUILD_NO_JIT
+ #endif
+ //! \endcond
