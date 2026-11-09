@@ -9,9 +9,11 @@ package:
 source:
   url: https://github.com/blend2d/blend2d/archive/{{ commit }}.tar.gz
   sha256: 212a77ceebf8c37ad5ca7e7eac1757ce7aa911b88085b076a9ed24f6de6e36fa
+  patches:
+    - patches/0001-msvc-arm64-jit-detection.patch
 
 build:
-  number: 0
+  number: 1
   run_exports:
     - {{ pin_subpackage(name, max_pin='x.x') }}
 
@@ -23,9 +25,6 @@ requirements:
     - cmake >=3.24
     - ninja-base
   host:
-    # asmjit use is disabled on win-arm64 at compile time due to unrecognized _M_ARM64
-    # see https://github.com/blend2d/blend2d/issues/276
-    # this is result in overdepending on asmjit for this arch, which we will accept for now.
     - asmjit 0.0.0.2026.03.26
 
 test:
