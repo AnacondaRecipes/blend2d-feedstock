@@ -1,0 +1,64 @@
+{% set name = "blend2d" %}
+{% set version = "0.21.2" %}
+{% set commit = "6dbc2cefbc996379e07104e34519a440b49b15d7" %}
+
+package:
+  name: {{ name }}
+  version: {{ version }}
+
+source:
+  url: https://github.com/blend2d/blend2d/archive/{{ commit }}.tar.gz
+  sha256: 212a77ceebf8c37ad5ca7e7eac1757ce7aa911b88085b076a9ed24f6de6e36fa
+
+build:
+  number: 0
+  run_exports:
+    - {{ pin_subpackage(name, max_pin='x.x') }}
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - {{ stdlib('c') }}
+    - cmake >=3.24
+    - ninja-base
+  host:
+    # asmjit use is disabled on win-arm64 at compile time due to unrecognized _M_ARM64
+    # see https://github.com/blend2d/blend2d/issues/276
+    # this is result in overdepending on asmjit for this arch, which we will accept for now.
+    - asmjit 0.0.0.2026.03.26
+
+test:
+  requires:
+    - {{ compiler('c') }}
+  source_files:
+    - blend2d-testing/samples/bl_sample_capi.c
+  commands:
+    - test -f "$PREFIX/include/blend2d/blend2d.h"  # [unix]
+    - test -f "$PREFIX/lib/libblend2d.so"  # [linux]
+    - test -f "$PREFIX/lib/libblend2d.dylib"  # [osx]
+    - test -f "$PREFIX/lib/cmake/blend2d/blend2d-config.cmake"  # [unix]
+    - if not exist "%LIBRARY_INC%\blend2d\blend2d.h" exit 1  # [win]
+    - if not exist "%LIBRARY_LIB%\cmake\blend2d\blend2d-config.cmake" exit 1  # [win]
+    - if not exist "%LIBRARY_BIN%\blend2d.dll" exit 1  # [win]
+    - $CC blend2d-testing/samples/bl_sample_capi.c -I"$PREFIX/include" -L"$PREFIX/lib" -Wl,-rpath,"$PREFIX/lib" -lblend2d -o blend2d-smoke  # [unix]
+    - ./blend2d-smoke  # [unix]
+    - cl /nologo blend2d-testing\samples\bl_sample_capi.c /I"%LIBRARY_INC%" /link /LIBPATH:"%LIBRARY_LIB%" blend2d.lib /OUT:blend2d-smoke.exe  # [win]
+    - blend2d-smoke.exe  # [win]
+
+about:
+  home: https://blend2d.com
+  dev_url: https://github.com/blend2d/blend2d
+  doc_url: https://blend2d.com/doc
+  license: Zlib
+  license_family: Other
+  license_file: LICENSE.md
+  summary: 2D vector graphics engine powered by a JIT compiler
+  description: |
+    Blend2D is a high performance 2D vector graphics engine written in C++.
+    The engine generates optimized pipelines at runtime with a JIT compiler
+    and also supports a reference pipeline.
+
+extra:
+  recipe-maintainers:
+    - kklein
